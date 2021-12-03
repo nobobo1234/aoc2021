@@ -1,0 +1,31 @@
+use std::fs;
+use std::error::Error;
+
+const INPUT: &str = "inputs/day03.txt";
+
+fn read_file_as_string() -> Result<String, Box<dyn Error>> {
+    let contents = fs::read_to_string(INPUT)?;
+    Ok(contents)
+}
+
+pub fn part1() -> Result<i64, &'static str> {
+    let file = read_file_as_string().map_err(|_| "Could not read file")?;
+    let length: i64 = file.lines().clone().count().try_into().unwrap();
+
+    let gamma_string = file.lines()
+        .map(|e| e.chars().map(|e| e.to_digit(10).unwrap() as i64).collect())
+        .fold(vec![0, 12], |sum, e: Vec<i64>| -> Vec<i64> {
+            sum.iter().zip(e).map(|(sum_el, curr_el)| sum_el + curr_el).collect()
+        })
+        .iter()
+        .map(|e| if e >= &(length / 2) { "1" } else { "0" })
+        .collect::<String>();
+
+    println!("{:?}", gamma_string);
+
+    // let gamma = i64::from_str_radix(&gamma_string, 2).unwrap();
+    // let epsilon = gamma ^ i64::from_str_radix("111111111111", 2).unwrap();
+
+    // Ok(gamma * epsilon)
+    Ok(1)
+}
