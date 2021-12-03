@@ -52,6 +52,14 @@ fn main() {
             -1
         }
     };
+    let part2 = match day03::part2() {
+        Ok(result) => result,
+        Err(e) => {
+            println!("Error: {}", e);
+            -1
+        }
+    };
 
     println!("Solution to part 1: {}", part1);
+    println!("Solution to part 1: {}", part2);
 }

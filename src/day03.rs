@@ -26,13 +26,74 @@ pub fn part1() -> Result<i64, &'static str> {
         // Convert the thing to the oxygen and co2 in a vector. Both are
         // opposites so e - 1 will be the opposite of e.
         .fold([String::new(), String::new()], |[s1, s2], e| {
-            [format!("{}{}", &s1, e), format!("{}{}", &s2, e - 1)]
+            [format!("{}{}", &s1, e), format!("{}{}", &s2, if e == 1 { 0 } else { 1 })]
         })
         // Convert every binary string to an integer
-        .map(|e| {println!("{}", e); i64::from_str_radix(&e, 2).unwrap()})
+        .map(|e| i64::from_str_radix(&e, 2).unwrap())
         .into_iter()
         // Take the product of the vector.
         .product();
 
     Ok(solution)
+}
+
+pub fn part2() -> Result<i64, &'static str> {
+    let file = read_file_as_string().map_err(|_| "Could not read file")?;
+
+    let lines: Vec<Vec<i64>> = file.lines()
+        // Converting every binary into a vector of integers.
+        .map(|e| e.chars().map(|e| e.to_digit(10).unwrap() as i64).collect())
+        .collect();
+
+    // Create an array with the lines two times, one for the oxygen number and
+    // one for the co2 number.
+    let mut oxyco2 = [lines.clone(), lines.clone()];
+
+    let result = oxyco2.iter_mut()
+        // Enumerate over the two lists to get the two indexes
+        .enumerate()
+        .map(|(i, list)| {
+            // Loop over every possible position in the binary numbers.
+            let mut cursor = 0;
+            while cursor < 12 {
+                // Find most common bit at cursor position by checking if sum of
+                // all bits is >= half of the length.
+                let half_length: i64 = (list.len() / 2).try_into().unwrap();
+                let common = list.iter()
+                    .fold(0, |sum, e| sum + e[cursor]) >= half_length;
+
+                // Now 1 = true and 0 = false, turn it into an i64.
+                let mut common: i64 = common.try_into().unwrap();
+
+                // We want to invert it for the second list.
+                if i == 1 {
+                    common = if common == 1 { 0 } else { 1 };
+                }
+
+                // Filter out all the bits that have the most common bit at the
+                // cursor position.
+                if list.len() > 1 {
+                    list.retain(|number| number[cursor] == common);
+                }
+
+                cursor += 1;
+            }
+
+            list
+                .iter()
+                // Convert all the vectors with individual bits as numbers to
+                // bits as strings.
+                .map(|e| {
+                    e.iter()
+                        .map(|e| e.to_string())
+                        .collect()
+                }).collect()
+        })
+        // Convert the only left-over (aka the first element) of each list from
+        // binary to number
+        .map(|e: Vec<String>| i64::from_str_radix(e.first().unwrap(), 2).unwrap())
+        // Take the product of the list.
+        .product();
+
+    Ok(result)
 }
